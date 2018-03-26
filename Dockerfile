@@ -18,6 +18,21 @@ RUN mkdir -p /etc/letsencrypt/webrootauth
 COPY entrypoint.sh /opt/entrypoint.sh
 ADD templates /templates
 
+# Adding GCSFUSE
+# Install packages
+RUN apk add --no-cache fuse
+
+# Install packages only needed for building
+RUN apk add --no-cache --virtual .build-dependencies git build-base go
+
+# Build the gcsfuse binary
+RUN go get -v -u github.com/googlecloudplatform/gcsfuse
+RUN mv /root/go/bin/gcsfuse /usr/local/bin/
+
+# Cleanup
+RUN apk del .build-dependencies
+RUN rm -rf /var/cache/apk/* /root/go
+
 # There is an expose in nginx:alpine image
 # EXPOSE 80 443
 

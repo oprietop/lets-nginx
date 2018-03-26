@@ -10,12 +10,11 @@ MISSING=""
 [ -z "${UPSTREAM}" ] && MISSING="${MISSING} UPSTREAM"
 [ -z "${EMAIL}" ] && MISSING="${MISSING} EMAIL"
 
-
 if [ "${MISSING}" != "" ]; then
   echo "Missing required environment variables:" >&2
   echo " ${MISSING}" >&2
   exit 1
-  fi
+fi
 
 #Processing DOMAIN into an array
 DOMAINSARRAY=($(echo "${DOMAIN}" | awk -F ";" '{for(i=1;i<=NF;i++) print $i;}'))
@@ -27,9 +26,19 @@ UPSTREAMARRAY=($(echo "${UPSTREAM}" | awk -F ";" '{for(i=1;i<=NF;i++) print $i;}
 echo "Services to reverse-proxy"
 printf "%s\n" "${UPSTREAMARRAY[@]}"
 
-#The two arrays should have the same lenght
+#The two arrays should have the same length
 if [ "${#DOMAINSARRAY[@]}" != "${#UPSTREAMARRAY[@]}" ]; then
   echo "The number of domains must match the number of upstream services"
+fi
+
+# Check for the gcsfuse binary
+if which gcsfuse
+then
+  echo "Found a gcsfuse binary"
+  if [ "${BUCKET}" != "" ]; then
+    echo "Mounting the '$BUCKET' bucket on /mnt:"
+    which gcsfuse && gcsfuse -o allow_other --implicit-dirs "$BUCKET" /mnt/file
+  fi
 fi
 
 # Default other parameters
@@ -39,7 +48,6 @@ if [ "$STAGING" = "1" ] ; then
 else
     SERVER=""
 fi
-
 
 # Generate strong DH parameters for nginx, if they don't already exist.
 if [ ! -f /etc/ssl/dhparams.pem ]; then
@@ -65,12 +73,11 @@ chown nginx:nginx /var/tmp/nginx
 mkdir -p /etc/nginx/vhosts/
 
 # Process the nginx.conf with raw values of $DOMAIN and $UPSTREAM to ensure backward-compatibility
-  dest="/etc/nginx/nginx.conf"
-  echo "Rendering template of nginx.conf"
-  sed -e "s/\${DOMAIN}/${DOMAIN}/g" \
-      -e "s/\${UPSTREAM}/${UPSTREAM}/" \
-      /templates/nginx.conf > "$dest"
-
+dest="/etc/nginx/nginx.conf"
+echo "Rendering template of nginx.conf"
+sed -e "s/\${DOMAIN}/${DOMAIN}/g" \
+    -e "s/\${UPSTREAM}/${UPSTREAM}/" \
+    /templates/nginx.conf > "$dest"
 
 # Process templates
 upstreamId=0
@@ -99,7 +106,7 @@ done
 
 # Check if the SAN list has changed
 if [ ! -f /etc/letsencrypt/san_list ]; then
- cat <<EOF >/etc/letsencrypt/san_list
+  cat <<EOF >/etc/letsencrypt/san_list
  "${DOMAIN}"
 EOF
   fresh=true
@@ -117,11 +124,11 @@ if [ $fresh = true ]; then
   echo "The SAN list has changed, removing the old certificate and ask for a new one."
   rm -rf /etc/letsencrypt/{live,archive,keys,renewal}
 
- echo "certbot certonly "${letscmd}" \
-  --standalone --preferred-challenges http --text \
-  "${SERVER}" \
-  --email "${EMAIL}" --agree-tos \
-  --expand " > /etc/nginx/lets
+  echo "certbot certonly "${letscmd}" \
+   --standalone --preferred-challenges http --text \
+   "${SERVER}" \
+   --email "${EMAIL}" --agree-tos \
+   --expand " > /etc/nginx/lets
 
   echo "Running initial certificate request... "
   /bin/bash /etc/nginx/lets

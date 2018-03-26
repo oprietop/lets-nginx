@@ -1,5 +1,8 @@
 # Let's Nginx
 
+## Fork notes
+This fork adds a compiled gcsfuse binary and the ability to mount a bucket on the /mnt mountpoint using the $BUCKET variable
+
 *[dockerhub build](https://hub.docker.com/r/smashwilson/lets-nginx/)*
 
 Put browser-valid TLS termination in front of any Dockerized HTTP service with one command.
