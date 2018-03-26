@@ -37,7 +37,7 @@ then
   echo "Found a gcsfuse binary"
   if [ "${BUCKET}" != "" ]; then
     echo "Mounting the '$BUCKET' bucket on /mnt:"
-    which gcsfuse && gcsfuse -o allow_other --implicit-dirs "$BUCKET" /mnt/file
+    which gcsfuse && gcsfuse -o allow_other --implicit-dirs "$BUCKET" /mnt
   fi
 fi
 

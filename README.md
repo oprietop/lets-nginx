@@ -1,7 +1,7 @@
-# Let's Nginx
-
-## Fork notes
+# Fork notes
 This fork adds a compiled gcsfuse binary and the ability to mount a bucket on the /mnt mountpoint using the $BUCKET variable
+
+# Let's Nginx
 
 *[dockerhub build](https://hub.docker.com/r/smashwilson/lets-nginx/)*
 
