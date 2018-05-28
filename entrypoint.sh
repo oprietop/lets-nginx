@@ -150,6 +150,10 @@ EOF
 
 chmod +x /etc/periodic/weekly/renew
 
+# Create a nginx owned wevdab directory
+mkdir -p /usr/share/nginx/webdav
+chown nginx:nginx /usr/share/nginx/webdav
+
 # Kick off cron to reissue certificates as required
 # Background the process and log to stderr
 /usr/sbin/crond -f -d 8 &
